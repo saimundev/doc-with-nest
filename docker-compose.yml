@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: project_management_app
+    container_name: project_management_app_3
     env_file:
       - .env
     ports:
@@ -16,13 +16,13 @@ services:
       - /app/node_modules
   database:
     image: postgres:16-alpine
-    container_name: project_management_db
+    container_name: project_management_db_3
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: myapp
     ports:
-      - '5433:5432'
+      - '5434:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U admin -d myapp']
       interval: 5s
@@ -31,5 +31,18 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  backup:
+    build: ./backup
+    container_name: project_management_backup_3
+    depends_on:
+      - database
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: myapp
+    volumes:
+      - ./backups:/backups
+      - ~/.config/rclone/rclone.conf:/config/rclone.conf:ro
+    restart: always
 volumes:
   db_data:
